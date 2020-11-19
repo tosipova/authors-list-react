@@ -1,80 +1,94 @@
-import React, { useState } from 'react';
-import { addAuthor } from '../services/fetch-author';
+import React from 'react';
+
 import '../editAuthor.css';
 
-// Добавить поле с названием книги и кнопку +, при нажатии на кнопку появляется ещё один инпут для ввода названия книги
+function EditAuthor(props) {
+    const [name, setName] = React.useState("Pushkin");
+    const [language, setLanguage] = React.useState("Russian");
+    const [fields, setFields] = React.useState(["Kapitanskya Dochka"])
 
-// При сабмите формы необходимо собрать данные по всем книгам в массив и отправить на сервер
-
-function EditAuthor() {
-
-    const [name, setName] = useState("Pushkin");
-    const [language, setLanguage] = useState("russian");
-    const [pages, setPages] = useState("356");
-
-
-    const onSubmit = (event) => {
-        event.preventDefault()
-        addAuthor(name, language, pages)
-        console.log(addAuthor)
-    }
-
+    React.useEffect(()=> {
+        if (props.currentAuthor) { // if ([]) => true
+            setName(props.currentAuthor.name)
+            setLanguage(props.currentAuthor.language)
+            setFields(props.currentAuthor.fields)
+        }
+    }, [props.currentAuthor])
+    
     return (
-        <form onSubmit={onSubmit} className="edit-form">
+        <form className="edit-form">
 
-            <input
-                type="text"
-                value={name}
-                onChange={(event) => {
-                    setName(event.target.value)
-                }}
-            />
-            <input
-                type="text"
-                value={language}
-                onChange={(event) => {
-                    setLanguage(event.target.value)
-                }}
-            />
-            <input
-                type="text"
-                value={pages}
-                onChange={(event) => {
-                    setPages(event.target.value)
-                }}
-            />
-            {/* <input
-                type="text"
-                value={form}
-                onChange={(event) => {
-                    setForm(event.target.value)
-                }}
-            /> */}
+       {/* {
+           props.currentAuthor && <button
+               onClick={() => {
+                   editCurrentAuthorOnServer()
+                   setCurrentAuthor()
+               }}
+               type="button"
+       
+           >
+                </button>
+       } */}
+            <button onClick={() => setFields([...fields, ""])}> + </button>
+            <button 
+                className="button-save" 
+                onClick={() => props.addAuthor({
+                                            name,
+                                            language,
+                                            fields,
+                                        })}
+            > 
+                Save 
+            </button>
+            <button  onClick={() => props.editAuthor(name,language,fields)}> Edit </button>
 
-            {/* <input value="Капитанская дочка" />
-
-            <input value="Евгений Онегин" />
-
-            <input /> */}
-
-            {/* <button
-            type="text"
-            value=""
-            onClick={(event) => {
+            <label htmlFor="Author">
+                Author
                 <input
-                type="text"
-                value={form}
-                onChange={(event) => {
-                    setForm(event.target.value)
-                }}
-            />
-            }
-            }
-            >+</button >  */}
+                    type="text"
+                    name="Author"
+                    value={name}
+                    onChange={(event) => {
+                        setName(event.target.value)
+                    }}
+                />
+            </label>
+            <label htmlFor="language">
+                Language
+            <input
+                    type="text"
+                    name="language"
+                    value={language}
+                    onChange={(event) => {
+                        setLanguage(event.target.value)
+                    }}
+                />
+            </label>
 
+            {(fields || []).map((field, idx) => {
 
-            <button className="button-save" onClick={() => addAuthor(name, language, pages)}> Save </button>
-        </form>
+                return (
+                    <label htmlFor="new book" key={idx}> New book
+                    
+                        <input
+                            type="text"
+                            value={field}
+                            name={idx}
+                            onChange={(event) => {
+                                const myUpdatedFields = [...fields]
+                                myUpdatedFields[idx] = event.target.value
+                                setFields(myUpdatedFields)
+                            }}
+                        />
+                    </label>
+                )
+            })
+
+            }
+            
+            
+
+        </form >
     );
 }
 export default EditAuthor;

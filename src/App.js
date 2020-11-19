@@ -1,14 +1,13 @@
 import React from 'react';
 import EditAuthor from './components/EditAuthor';
 import OneAuthor from './components/OneAuthor';
-import { fetchAuthors, fetchAuthor } from './services/fetch-author';
-import { addAuthor as addAuthorToServer } from './services/fetch-author';
-
-import './index.css'
+import './index.css';
+import { addAuthor as addAuthorToServer, fetchAuthors, removeAuthor, editAuthorFunk as editCurrentAuthorOnServer } from './services/fetch-author';
 
 function App() {
 
   const [authorList, setAuthorList] = React.useState([]);
+  const [currentAuthor, setCurrentAuthor] = React.useState();
 
   React.useEffect(() => {
     fetchAuthors().then(
@@ -18,38 +17,47 @@ function App() {
     )
   }, []);
 
-  const addAuthor = (name, language, pages) => {
-    addAuthorToServer(name, language, pages)
-      .then(() => {
-        return fetchAuthor()
-      })
-      .then(newAuthorList => {
-        setAuthorList(newAuthorList)
-      })
+  const removeAuthorById = id => {
+    removeAuthor(id)
+    fetchAuthors().then(
+      listResult => {
+        setAuthorList(listResult)
+      }
+    )
   }
 
-  // const removeAuthor = (id) => {
-  //   removeAuthorFromServer(id)
-  //     .then(() => {
-  //       setauthorList(authorList.filter(item => item.id !== id))
-  //     })
-  // }
+  const addAuthor = (author) => {
+    addAuthorToServer(author)
+      .then(newAuthorList => {
+        if (newAuthorList) {
+          setAuthorList(newAuthorList)
+        }
+      }).catch(e => console.log(e))
+  }
 
-  // const onClickEditAuthor = (id) => {
-  //     const currentAuthor = authorList.find((item) => {
-  //     if (item._id === id) {
-  //       return true
-  //     }
-  //   })
+ 
+  const editAuthorFunk = (author) => {
+    editCurrentAuthorOnServer(author)
+      .then(newAuthorList => {
+        if (newAuthorList) {
+          setAuthorList(newAuthorList)
+        }
+      }).catch(e => console.log(e))
+  }
+
+  const onClickEditAuthor = (author) => {
+    setCurrentAuthor(author)
+  }
 
   return (
     <div className="row">
-
-      <EditAuthor addAuthor={addAuthor} />
+      <EditAuthor
+        addAuthor={addAuthor}
+        editAuthor={editAuthorFunk} 
+        currentAuthor={currentAuthor} />
       <div className="row" />
-
-      {authorList.map((auth) => <OneAuthor {...auth} />)
-      }
+      {authorList.map((author) => <OneAuthor key={author.id} {...author} onDelete={() => removeAuthorById(author.id)} onEdit={() => onClickEditAuthor(author)}
+      />)}
     </div>
   );
 }

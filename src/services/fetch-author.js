@@ -1,71 +1,99 @@
-const API_URL = 'https://crudcrud.com/api/c26516e2471f402c90db47d04fbd50ad'
+import { nanoid } from 'nanoid'
 
 
-export function fetchAuthor(id) {
-  return fetch(API_URL + `/authors/${id}`)
-    .then(response => response.json())
-    .then((result) => {
-      return result
-    });
-}
-export function fetchAuthors() {
-  console.log("Calling get authors")
-  return fetch(API_URL + `/authors`)
-    .then(response => response.json())
-    .then((result) => {
-      console.log('response %s', JSON.stringify(result))
-      return result
-    });
-}
-
-export function addAuthor(name, language, pages) {
-  return fetch(API_URL + "/authors", {
-    method: 'POST',
-    body: JSON.stringify({
-      name,
-      language,
-      pages
-    }),
-    headers: {
-      'Content-Type': 'application/json'
-    },
+function fakeFetch(fn) {
+  return new Promise((resolve, reject) => {
+    try {
+      const res = fn();
+      resolve(res);
+    } catch (error) {
+      reject(error)
+    }
   })
-    .then(response => {
-      console.log(response.status);
+}
+export function fetchAuthor(id) {
+  return fakeFetch(() => {
+    const authors = getAuthorsFromStorage();
+    const author = authors.find(a => a.id === id); // [{id}, {id}, {id}] => {id}
+    if (!author) {
+      throw new Error(`There is no author with id ${id}`);
+      // throw new Error(`There is no author with id ${id}`) DONE
+    }
+    return author;
+  })
+}
+
+export function fetchAuthors() {
+  return fakeFetch(() => {
+    return getAuthorsFromStorage() // [] || null
+  })
+}
+
+export function addAuthor(author) {
+  console.log("addAuthor")
+  return fakeFetch(() => {
+    const authors = getAuthorsFromStorage();
+    if (authors.some(a => a.name === author.name)) {
+      throw new Error('Duplicate author')
+    }
+
+    authors.push({
+      ...author,
+      id: nanoid()
     })
+    setAuthorsToStorage(authors)
+  })
+
 }
 
 
+function setAuthorsToStorage(authors) {
+  localStorage.setItem('authors', JSON.stringify(authors));
+}
+function getAuthorsFromStorage() {
+  return JSON.parse(localStorage.getItem('authors')) || [];
+}
 
-// export function removeAuthor(id) {
-//   const API_URL_SINGLE_BOOK = `${API_URL}/${id}`;
-//   return fetch(API_URL_SINGLE_BOOK, {
-//     method: 'DELETE'
-//   })
-//     .then(response => {
-//       if (response.status !== 200) {
-//         throw new Error();
-//       }
-//     })
+export function removeAuthor(id) {
+  return fakeFetch(() => {
+    const authors = getAuthorsFromStorage();
+    const authorIndex = authors.findIndex(a => a.id === id);
+    if (authorIndex === -1) {
+      throw new Error(`There is no authorIndex with id ${id}`);
 
-// };
+    }
+    authors.splice(authorIndex, 1)
+    setAuthorsToStorage(authors);
 
-// export function editAuthor(id,name,language,pages) {
-//   const API_URL_SINGLE_BOOK = `${API_URL}/${id}`;
-//   return fetch(API_URL_SINGLE_BOOK, {
-//     method: 'POST',
-//     body: JSON.stringify({
-//     name,
-//     language,
-//     pages
-//     }),
-//     headers: {
-//       'Content-Type': 'application/json'
-//     },
-//   })
-//     .then(response => {
-//       if (response.status !== 200) {
-//         throw new Error();
-//       }
-//     })
-// };
+  })
+}
+
+
+export function editAuthorFunk({ id, ...author }) {
+  return fakeFetch(() => {
+    const authors = getAuthorsFromStorage();
+    const authorIndex = authors.findIndex(a => a.id === id);
+    if (authorIndex === -1) {
+      throw new Error(`There is no authorIndex with id ${id}`)
+    }
+    //  authors.splice(authorIndex, 1, {name,language,fields,id})
+    //   const arr=[1,2,3,4]
+
+    // const idx = 2
+    // const arr1 = arr.slice(idx+1) // const arr1 = authors.slice(authorIndex+1)
+    // const arr2= arr.slice(0,idx); // cosnt arr2 = authors.slice(0,auhotrIndex) 
+
+    // const arr3 = arr2.concat(13,arr1)
+    // console.log(arr3)
+    // console.log([...arr2,13,...arr1])
+
+    // authors.slice(0,authorIndex,)
+    //  setAuthorsToStorage(authors)
+    // ([...authors.slice(0,authorIndex),{name,language,fields,id},...authors.slice(authorIndex+1)])
+
+    authors[authorIndex] = {
+      ...author,
+      id
+    }
+  })
+}

@@ -1,4 +1,4 @@
- // const people = [
+//  const people = [
 
 //     { name: "Tanya", age: 43, address: "Seckenheimer str. 77", kids: 1},
 

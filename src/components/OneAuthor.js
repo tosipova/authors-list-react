@@ -1,15 +1,24 @@
 import React from 'react';
-import '../oneAuthor.css'
+import '../styles/oneAuthor.css'
 
-function OneAuthor({ name, language, pages }) {
-    console.log(name)
+
+
+
+function OneAuthor({ name, language, fields, onDelete, onEdit }) {
+
+
     return (
         <div className="one-author">
-            <div> {name} </div>
-            <div> {language} </div>
-            <div> {pages} </div>
-            <button> Edit Author</button>
-            <button> Delete Author </button>
+            <div className="field"> {name} </div>
+            <div className="field"> {language} </div>
+            <div className="field"> {fields} </div>
+
+
+            <div className="btn-group">
+                <button className="edit-button" onClick={onEdit}> Edit Author</button>
+                <button onClick={onDelete} > Delete Author </button>
+            </div>
+
         </div>
     );
 }
